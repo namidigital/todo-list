@@ -1,40 +1,26 @@
 import { useState } from 'react';
 import './App.css';
-import TodoList from './features/TodoList/TodoList.jsx';
-import TodoForm from './features/TodoForm.jsx';
+import Header from './shared/Header.jsx';
+import TodosPage from './features/Todos/TodosPage.jsx';
+import Logon from './features/Logon/Logon.jsx';
 
 function App() {
-  const [todoList, setTodoList] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [csrfToken, setCsrfToken] = useState('');
 
-  function addTodo(todoTitle) {
-    const newTodo = { id: Date.now(), title: todoTitle, isCompleted: false };
-    setTodoList((previous) => [newTodo, ...previous]);
-  }
-
-  function completeTodo(id) {
-    setTodoList((previous) =>
-      previous.map((todo) =>
-        todo.id === id ? { ...todo, isCompleted: true } : todo
-      )
-    );
-  }
-
-  function updateTodo(editedTodo) {
-    const updatedTodos = todoList.map((todo) =>
-      todo.id === editedTodo.id ? { ...editedTodo } : todo
-    );
-    setTodoList(updatedTodos);
+  function handleLogonSuccess(token) {
+    setCsrfToken(token);
+    setIsLoggedIn(true);
   }
 
   return (
     <div>
-      <h1>My Todos</h1>
-      <TodoForm onAddTodo={addTodo} />
-      <TodoList
-        todoList={todoList}
-        onCompleteTodo={completeTodo}
-        onUpdateTodo={updateTodo}
-      />
+      <Header />
+      {isLoggedIn ? (
+        <TodosPage csrfToken={csrfToken} />
+      ) : (
+        <Logon onLogonSuccess={handleLogonSuccess} />
+      )}
     </div>
   );
 }
