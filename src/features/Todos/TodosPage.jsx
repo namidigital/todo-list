@@ -20,14 +20,17 @@ function TodosPage({ token }) {
           headers: { 'X-CSRF-TOKEN': token },
         });
 
+        if (response.status === 401) {
+          throw new Error('unauthorized');
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch todos.');
         }
 
         const data = await response.json();
         const mappedTodos = data.tasks.map((task) => ({
-          id: task.id,
-          title: task.title,
+          ...task,
           isCompleted: task.isCompleted || false,
         }));
 
@@ -59,20 +62,21 @@ function TodosPage({ token }) {
         body: JSON.stringify({ title: todoTitle, isCompleted: false }),
       });
 
+      if (response.status === 401) {
+        throw new Error('unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to add todo.');
       }
 
-      const savedTodo = await response.json();
+      const data = await response.json();
+      const savedTodo = data;
 
       setTodoList((previous) =>
         previous.map((todo) =>
           todo.id === tempId
-            ? {
-                id: savedTodo.id,
-                title: savedTodo.title,
-                isCompleted: savedTodo.isCompleted || false,
-              }
+            ? { ...savedTodo, isCompleted: savedTodo.isCompleted || false }
             : todo
         )
       );
@@ -101,6 +105,10 @@ function TodosPage({ token }) {
         },
         body: JSON.stringify({ isCompleted: true }),
       });
+
+      if (response.status === 401) {
+        throw new Error('unauthorized');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to complete todo.');
@@ -135,6 +143,10 @@ function TodosPage({ token }) {
           isCompleted: editedTodo.isCompleted,
         }),
       });
+
+      if (response.status === 401) {
+        throw new Error('unauthorized');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to update todo.');

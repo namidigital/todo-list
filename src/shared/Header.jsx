@@ -1,20 +1,8 @@
-function Header({ email, token, onSetToken }) {
-  function handleLogOff() {
-    onSetToken('');
-  }
-
+function Header({ token, onSetToken, onSetEmail }) {
   return (
-    <div>
+    <header>
       <h1>Todo List</h1>
-      {token && (
-        <p>
-          Logged on as {email}{' '}
-          <button type="button" onClick={handleLogOff}>
-            Log Off
-          </button>
-        </p>
-      )}
-    </div>
+    </header>
   );
 }
 
