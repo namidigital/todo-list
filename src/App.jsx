@@ -5,21 +5,16 @@ import TodosPage from './features/Todos/TodosPage.jsx';
 import Logon from './features/Logon/Logon.jsx';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [csrfToken, setCsrfToken] = useState('');
-
-  function handleLogonSuccess(token) {
-    setCsrfToken(token);
-    setIsLoggedIn(true);
-  }
+  const [email, setEmail] = useState('');
+  const [token, setToken] = useState('');
 
   return (
     <div>
-      <Header />
-      {isLoggedIn ? (
-        <TodosPage csrfToken={csrfToken} />
+      <Header email={email} token={token} onSetToken={setToken} />
+      {token ? (
+        <TodosPage token={token} />
       ) : (
-        <Logon onLogonSuccess={handleLogonSuccess} />
+        <Logon onSetEmail={setEmail} onSetToken={setToken} />
       )}
     </div>
   );

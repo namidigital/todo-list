@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import TextInputWithLabel from '../../shared/TextInputWithLabel.jsx';
 
-function Logon({ onLogonSuccess }) {
+function Logon({ onSetEmail, onSetToken }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoggingOn, setIsLoggingOn] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setErrorMessage('');
+    setIsLoggingOn(true);
+    setAuthError('');
 
     try {
       const response = await fetch('/api/users/logon', {
@@ -26,9 +28,12 @@ function Logon({ onLogonSuccess }) {
       }
 
       const data = await response.json();
-      onLogonSuccess(data.csrfToken);
+      onSetEmail(email);
+      onSetToken(data.csrfToken);
     } catch (error) {
-      setErrorMessage(error.message);
+      setAuthError(error.message);
+    } finally {
+      setIsLoggingOn(false);
     }
   }
 
@@ -48,11 +53,12 @@ function Logon({ onLogonSuccess }) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
-        <button type="submit" disabled={!email.trim() || !password.trim()}>
+        <button type="submit" disabled={!email.trim() || !password.trim() || isLoggingOn}>
           Log On
         </button>
       </form>
-      {errorMessage && <p role="alert">{errorMessage}</p>}
+      {isLoggingOn && <p>Logging on...</p>}
+      {authError && <p role="alert">{authError}</p>}
     </div>
   );
 }
