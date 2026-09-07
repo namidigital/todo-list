@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import TextInputWithLabel from '../shared/TextInputWithLabel.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
-function Logon({ onSetEmail, onSetToken }) {
+function Logon() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingOn, setIsLoggingOn] = useState(false);
@@ -12,29 +14,13 @@ function Logon({ onSetEmail, onSetToken }) {
     setIsLoggingOn(true);
     setAuthError('');
 
-    try {
-      const response = await fetch('/api/users/logon', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    const result = await login(email, password);
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Logon failed. Check your email and password.');
-      }
-
-      const data = await response.json();
-      onSetEmail(email);
-      onSetToken(data.csrfToken);
-    } catch (error) {
-      setAuthError(error.message);
-    } finally {
-      setIsLoggingOn(false);
+    if (!result.success) {
+      setAuthError(result.error);
     }
+
+    setIsLoggingOn(false);
   }
 
   return (
@@ -53,7 +39,10 @@ function Logon({ onSetEmail, onSetToken }) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
-        <button type="submit" disabled={!email.trim() || !password.trim() || isLoggingOn}>
+        <button
+          type="submit"
+          disabled={!email.trim() || !password.trim() || isLoggingOn}
+        >
           Log On
         </button>
       </form>
