@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import TextInputWithLabel from '../shared/TextInputWithLabel.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import styles from './LoginPage.module.css';
 
 function LoginPage() {
   const { login, isAuthenticated } = useAuth();
@@ -36,30 +37,37 @@ function LoginPage() {
   }
 
   return (
-    <div>
-      <h2>Logon</h2>
-      <form onSubmit={handleSubmit}>
-        <TextInputWithLabel
-          elementId="email"
-          labelText="Email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <TextInputWithLabel
-          elementId="password"
-          labelText="Password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={!email.trim() || !password.trim() || isLoggingOn}
-        >
-          Log On
-        </button>
-      </form>
-      {isLoggingOn && <p>Logging on...</p>}
-      {authError && <p role="alert">{authError}</p>}
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <h2 className={styles.heading}>Logon</h2>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <TextInputWithLabel
+            elementId="email"
+            labelText="Email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <TextInputWithLabel
+            elementId="password"
+            labelText="Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={!email.trim() || !password.trim() || isLoggingOn}
+            className={styles.button}
+          >
+            Log On
+          </button>
+        </form>
+        {isLoggingOn && <p className={styles.status}>Logging on...</p>}
+        {authError && (
+          <p role="alert" className={styles.error}>
+            {authError}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import TextInputWithLabel from '../../../shared/TextInputWithLabel.jsx';
 import { isValidTodoTitle } from '../../../utils/todoValidation';
+import styles from './TodoListItem.module.css';
 
-function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
+function TodoListItem({ todo, onToggleTodo, onUpdateTodo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(todo.title);
 
@@ -22,9 +23,17 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
     setIsEditing(false);
   }
 
+  const formClassName = isEditing
+    ? `${styles.form} ${styles.editing}`
+    : styles.form;
+
+  const titleClassName = todo.isCompleted
+    ? `${styles.title} ${styles.completed}`
+    : styles.title;
+
   return (
-    <li>
-      <form onSubmit={handleUpdate}>
+    <li className={styles.item}>
+      <form onSubmit={handleUpdate} className={formClassName}>
         {isEditing ? (
           <>
             <TextInputWithLabel
@@ -33,24 +42,40 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
               value={workingTitle}
               onChange={handleEdit}
             />
-            <button type="button" onClick={handleCancel}>
-              Cancel
-            </button>
-            <button type="submit" disabled={!isValidTodoTitle(workingTitle)}>
-              Update
-            </button>
+            <div className={styles.editActions}>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className={styles.cancelButton}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!isValidTodoTitle(workingTitle)}
+                className={styles.updateButton}
+              >
+                Update
+              </button>
+            </div>
           </>
         ) : (
           <>
-            <label>
+            <label className={styles.checkLabel}>
               <input
                 type="checkbox"
                 id={`checkbox${todo.id}`}
                 checked={todo.isCompleted}
-                onChange={() => onCompleteTodo(todo.id)}
+                onChange={() => onToggleTodo(todo.id)}
+                className={styles.checkbox}
               />
             </label>
-            <span onClick={() => setIsEditing(true)}>{todo.title}</span>
+            <span
+              onClick={() => setIsEditing(true)}
+              className={titleClassName}
+            >
+              {todo.title}
+            </span>
           </>
         )}
       </form>

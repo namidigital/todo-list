@@ -1,0 +1,11 @@
+.statusFilter {
+  min-width: 0;
+}
+
+.label {
+  composes: label from './controls.module.css';
+}
+
+.select {
+  composes: select from './controls.module.css';
+}

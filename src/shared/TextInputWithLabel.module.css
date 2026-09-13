@@ -1,0 +1,7 @@
+.label {
+  composes: label from './controls.module.css';
+}
+
+.input {
+  composes: input from './controls.module.css';
+}

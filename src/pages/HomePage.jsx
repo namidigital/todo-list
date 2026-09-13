@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import styles from './HomePage.module.css';
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -14,7 +15,7 @@ function HomePage() {
     }
   }, [isAuthenticated, navigate]);
 
-  return <p>Redirecting...</p>;
+  return <p className={styles.redirecting}>Redirecting...</p>;
 }
 
 export default HomePage;

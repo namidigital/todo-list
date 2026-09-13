@@ -1,0 +1,18 @@
+.sortBy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.field {
+  min-width: 0;
+}
+
+.label {
+  composes: label from './controls.module.css';
+}
+
+.select {
+  composes: select from './controls.module.css';
+}

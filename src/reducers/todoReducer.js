@@ -85,7 +85,9 @@ export function todoReducer(state, action) {
       return {
         ...state,
         todoList: state.todoList.map((todo) =>
-          todo.id === action.payload.id ? { ...todo, isCompleted: true } : todo
+          todo.id === action.payload.id
+            ? { ...todo, isCompleted: action.payload.isCompleted }
+            : todo
         ),
       };
 

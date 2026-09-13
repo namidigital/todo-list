@@ -1,0 +1,28 @@
+/* App shell: centered column with responsive gutters. The header owns its own
+   full-width bar; main content sits in the container below it. */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+  padding-block: var(--space-5) var(--space-8);
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .app-main {
+    padding-block: var(--space-6) var(--space-8);
+  }
+}
+
+@media (min-width: 900px) {
+  .app-main {
+    padding-block: var(--space-7) var(--space-8);
+  }
+}

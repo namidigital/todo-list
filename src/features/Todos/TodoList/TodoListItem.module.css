@@ -1,0 +1,154 @@
+.item {
+  position: relative;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.item:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-raised);
+}
+
+.item:focus-within {
+  border-color: var(--color-accent);
+}
+
+.form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 60px;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* --- View mode ----------------------------------------------------- */
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+.checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.checkbox::after {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--color-on-accent);
+  border-bottom: 2px solid var(--color-on-accent);
+  transform: rotate(-45deg) scale(0);
+  transform-origin: center;
+  margin-top: -2px;
+  transition: transform var(--transition-fast);
+}
+
+.checkLabel:hover .checkbox {
+  border-color: var(--color-accent);
+}
+
+.checkbox:checked {
+  border-color: var(--color-accent-strong);
+  background-color: var(--color-accent-strong);
+}
+
+.checkbox:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding-inline: var(--space-1);
+  overflow-wrap: anywhere;
+  cursor: text;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.title:hover {
+  color: var(--color-accent-hover);
+}
+
+.completed {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--color-border-strong);
+}
+
+/* --- Edit mode ----------------------------------------------------- */
+.editing {
+  flex-wrap: wrap;
+}
+
+/* The field label is still read by screen readers; visually the input alone
+   sits in the row where the title was. */
+.editing label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.editing input {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.editActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.cancelButton {
+  composes: buttonGhost from '../../../shared/controls.module.css';
+}
+
+.updateButton {
+  composes: buttonPrimary from '../../../shared/controls.module.css';
+}
+
+@media (min-width: 640px) {
+  .form {
+    padding-inline: var(--space-3) var(--space-4);
+  }
+
+  .editing input {
+    flex: 1 1 0;
+  }
+
+  .editActions {
+    margin-left: 0;
+  }
+}
