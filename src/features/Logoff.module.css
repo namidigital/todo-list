@@ -1,0 +1,32 @@
+.logoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.user {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.button {
+  composes: buttonGhost from '../shared/controls.module.css';
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .logoff {
+    justify-content: flex-start;
+  }
+}

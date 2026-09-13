@@ -1,0 +1,91 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* --- Alerts --------------------------------------------------------- */
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-danger-subtle);
+  border: 1px solid var(--color-danger-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+}
+
+.alertMessage {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  flex: 1;
+}
+
+.alertActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.alertButton {
+  composes: buttonDanger from '../shared/controls.module.css';
+}
+
+.alertButtonSecondary {
+  composes: buttonGhost from '../shared/controls.module.css';
+}
+
+.loading {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- Controls panel --------------------------------------------------- */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.list {
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .page {
+    gap: var(--space-5);
+  }
+
+  .alert {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .controls {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  /* Sort controls span the full first row; status + search share the second. */
+  .controls > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 900px) {
+  .controls {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr);
+    align-items: end;
+  }
+
+  .controls > :first-child {
+    grid-column: auto;
+  }
+}

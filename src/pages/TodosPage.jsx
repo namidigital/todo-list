@@ -8,10 +8,16 @@ import FilterInput from '../shared/FilterInput.jsx';
 import useDebounce from '../utils/useDebounce.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
+  UNAUTHORIZED,
+  logDevError,
+  toUserMessage,
+} from '../utils/errorMessages';
+import {
   todoReducer,
   initialTodoState,
   TODO_ACTIONS,
 } from '../reducers/todoReducer';
+import styles from './TodosPage.module.css';
 
 function TodosPage() {
   const { token } = useAuth();
@@ -53,11 +59,11 @@ function TodosPage() {
         });
 
         if (response.status === 401) {
-          throw new Error('unauthorized');
+          throw new Error(UNAUTHORIZED);
         }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch todos.');
+          throw new Error(`Fetch todos failed (HTTP ${response.status})`);
         }
 
         const data = await response.json();
@@ -71,6 +77,8 @@ function TodosPage() {
           payload: { todos: mappedTodos },
         });
       } catch (fetchError) {
+        logDevError('fetchTodos', fetchError);
+
         const isFilterError =
           Boolean(debouncedFilterTerm) ||
           sortBy !== 'createdAt' ||
@@ -79,9 +87,12 @@ function TodosPage() {
         dispatch({
           type: TODO_ACTIONS.FETCH_ERROR,
           payload: {
-            message: isFilterError
-              ? `Error filtering/sorting todos: ${fetchError.message}`
-              : `Error fetching todos: ${fetchError.message}`,
+            message: toUserMessage(
+              fetchError,
+              isFilterError
+                ? 'We could not filter or sort your todos. Try clearing the filters.'
+                : 'We could not load your todos. Please try again.'
+            ),
             isFilterError,
           },
         });
@@ -112,11 +123,11 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to add todo.');
+        throw new Error(`Add todo failed (HTTP ${response.status})`);
       }
 
       const data = await response.json();
@@ -127,17 +138,28 @@ function TodosPage() {
         payload: { tempId, savedTodo },
       });
     } catch (addError) {
+      logDevError('addTodo', addError);
       dispatch({
         type: TODO_ACTIONS.ADD_TODO_ERROR,
-        payload: { message: addError.message, tempId },
+        payload: {
+          message: toUserMessage(
+            addError,
+            'We could not save your todo. Please try again.'
+          ),
+          tempId,
+        },
       });
     }
   }
 
-  async function completeTodo(id) {
+  async function toggleTodo(id) {
     const originalTodo = todoList.find((todo) => todo.id === id);
+    const isCompleted = !originalTodo.isCompleted;
 
-    dispatch({ type: TODO_ACTIONS.COMPLETE_TODO_START, payload: { id } });
+    dispatch({
+      type: TODO_ACTIONS.COMPLETE_TODO_START,
+      payload: { id, isCompleted },
+    });
 
     try {
       const response = await fetch(`/api/tasks/${id}`, {
@@ -147,22 +169,30 @@ function TodosPage() {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': token,
         },
-        body: JSON.stringify({ isCompleted: true }),
+        body: JSON.stringify({ isCompleted }),
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to complete todo.');
+        throw new Error(`Toggle todo failed (HTTP ${response.status})`);
       }
 
       dispatch({ type: TODO_ACTIONS.COMPLETE_TODO_SUCCESS });
-    } catch (completeError) {
+    } catch (toggleError) {
+      logDevError('toggleTodo', toggleError);
       dispatch({
         type: TODO_ACTIONS.COMPLETE_TODO_ERROR,
-        payload: { message: completeError.message, id, originalTodo },
+        payload: {
+          message: toUserMessage(
+            toggleError,
+            'We could not update that todo. Please try again.'
+          ),
+          id,
+          originalTodo,
+        },
       });
     }
   }
@@ -190,19 +220,23 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to update todo.');
+        throw new Error(`Update todo failed (HTTP ${response.status})`);
       }
 
       dispatch({ type: TODO_ACTIONS.UPDATE_TODO_SUCCESS });
     } catch (updateError) {
+      logDevError('updateTodo', updateError);
       dispatch({
         type: TODO_ACTIONS.UPDATE_TODO_ERROR,
         payload: {
-          message: updateError.message,
+          message: toUserMessage(
+            updateError,
+            'We could not save your changes. Please try again.'
+          ),
           id: editedTodo.id,
           originalTodo,
         },
@@ -210,71 +244,127 @@ function TodosPage() {
     }
   }
 
+  async function deleteTodo(id) {
+    const originalIndex = todoList.findIndex((todo) => todo.id === id);
+    const originalTodo = todoList[originalIndex];
+
+    dispatch({ type: TODO_ACTIONS.DELETE_TODO_START, payload: { id } });
+
+    try {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'X-CSRF-TOKEN': token },
+      });
+
+      if (response.status === 401) {
+        throw new Error(UNAUTHORIZED);
+      }
+
+      if (!response.ok) {
+        throw new Error(`Delete todo failed (HTTP ${response.status})`);
+      }
+
+      dispatch({ type: TODO_ACTIONS.DELETE_TODO_SUCCESS });
+    } catch (deleteError) {
+      logDevError('deleteTodo', deleteError);
+      dispatch({
+        type: TODO_ACTIONS.DELETE_TODO_ERROR,
+        payload: {
+          message: toUserMessage(
+            deleteError,
+            'We could not delete that todo. Please try again.'
+          ),
+          originalTodo,
+          originalIndex,
+        },
+      });
+    }
+  }
+
   return (
-    <div>
+    <div className={styles.page}>
       {error && (
-        <div>
-          <p role="alert">{error}</p>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_ERROR })}
-          >
-            Clear Error
-          </button>
+        <div className={styles.alert}>
+          <p role="alert" className={styles.alertMessage}>
+            {error}
+          </p>
+          <div className={styles.alertActions}>
+            <button
+              type="button"
+              onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_ERROR })}
+              className={styles.alertButton}
+            >
+              Clear Error
+            </button>
+          </div>
         </div>
       )}
       {filterError && (
-        <div>
-          <p role="alert">{filterError}</p>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_FILTER_ERROR })}
-          >
-            Clear Filter Error
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: TODO_ACTIONS.RESET_FILTERS })}
-          >
-            Reset Filters
-          </button>
+        <div className={styles.alert}>
+          <p role="alert" className={styles.alertMessage}>
+            {filterError}
+          </p>
+          <div className={styles.alertActions}>
+            <button
+              type="button"
+              onClick={() =>
+                dispatch({ type: TODO_ACTIONS.CLEAR_FILTER_ERROR })
+              }
+              className={styles.alertButton}
+            >
+              Clear Filter Error
+            </button>
+            <button
+              type="button"
+              onClick={() => dispatch({ type: TODO_ACTIONS.RESET_FILTERS })}
+              className={styles.alertButtonSecondary}
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
       )}
-      {isTodoListLoading && <p>Loading todos...</p>}
-      <SortBy
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSortByChange={(newSortBy) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: { sortBy: newSortBy, sortDirection },
-          })
-        }
-        onSortDirectionChange={(newDirection) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: { sortBy, sortDirection: newDirection },
-          })
-        }
-      />
-      <StatusFilter />
-      <FilterInput
-        filterTerm={filterTerm}
-        onFilterChange={(newTerm) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_FILTER,
-            payload: { filterTerm: newTerm },
-          })
-        }
-      />
+      {isTodoListLoading && <p className={styles.loading}>Loading todos...</p>}
+      <div className={styles.controls}>
+        <SortBy
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortByChange={(newSortBy) =>
+            dispatch({
+              type: TODO_ACTIONS.SET_SORT,
+              payload: { sortBy: newSortBy, sortDirection },
+            })
+          }
+          onSortDirectionChange={(newDirection) =>
+            dispatch({
+              type: TODO_ACTIONS.SET_SORT,
+              payload: { sortBy, sortDirection: newDirection },
+            })
+          }
+        />
+        <StatusFilter />
+        <FilterInput
+          filterTerm={filterTerm}
+          onFilterChange={(newTerm) =>
+            dispatch({
+              type: TODO_ACTIONS.SET_FILTER,
+              payload: { filterTerm: newTerm },
+            })
+          }
+        />
+      </div>
       <TodoForm onAddTodo={addTodo} />
-      <TodoList
-        todoList={todoList}
-        onCompleteTodo={completeTodo}
-        onUpdateTodo={updateTodo}
-        dataVersion={dataVersion}
-        statusFilter={statusFilter}
-      />
+      <div className={styles.list}>
+        <TodoList
+          todoList={todoList}
+          onToggleTodo={toggleTodo}
+          onUpdateTodo={updateTodo}
+          onDeleteTodo={deleteTodo}
+          dataVersion={dataVersion}
+          statusFilter={statusFilter}
+        />
+      </div>
     </div>
   );
 }

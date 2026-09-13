@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import {
+  UNAUTHORIZED,
+  logDevError,
+  toUserMessage,
+} from '../utils/errorMessages';
+import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
   const { email, token, isAuthenticated } = useAuth();
@@ -26,11 +32,11 @@ function ProfilePage() {
         });
 
         if (response.status === 401) {
-          throw new Error('Unauthorized');
+          throw new Error(UNAUTHORIZED);
         }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch todo statistics.');
+          throw new Error(`Fetch stats failed (HTTP ${response.status})`);
         }
 
         // The API responds with { tasks: [...], pagination: {...} }
@@ -40,7 +46,13 @@ function ProfilePage() {
 
         setTodoStats({ total, completed, active: total - completed });
       } catch (statsError) {
-        setError(statsError.message);
+        logDevError('fetchTodoStats', statsError);
+        setError(
+          toUserMessage(
+            statsError,
+            'We could not load your todo statistics. Please try again later.'
+          )
+        );
       } finally {
         setLoading(false);
       }
@@ -55,28 +67,55 @@ function ProfilePage() {
       : 0;
 
   return (
-    <div>
-      <h2>Profile</h2>
+    <div className={styles.page}>
+      <h2 className={styles.heading}>Profile</h2>
 
-      <section>
-        <h3>Account Information</h3>
-        <p>Email: {email}</p>
-        <p>Status: {isAuthenticated ? 'Authenticated' : 'Not authenticated'}</p>
+      <section className={styles.section}>
+        <h3 className={styles.subheading}>Account Information</h3>
+        <div className={styles.account}>
+          <p>
+            Email: <span className={styles.value}>{email}</span>
+          </p>
+          <p>
+            Status:{' '}
+            <span className={isAuthenticated ? styles.statusOk : styles.value}>
+              {isAuthenticated ? 'Authenticated' : 'Not authenticated'}
+            </span>
+          </p>
+        </div>
       </section>
 
-      <section>
-        <h3>Todo Statistics</h3>
+      <section className={styles.section}>
+        <h3 className={styles.subheading}>Todo Statistics</h3>
         {loading ? (
-          <p>Loading statistics...</p>
+          <p className={styles.muted}>Loading statistics...</p>
         ) : error ? (
-          <p role="alert">{error}</p>
+          <p role="alert" className={styles.error}>
+            {error}
+          </p>
         ) : (
-          <>
-            <p>Total todos: {todoStats.total}</p>
-            <p>Completed todos: {todoStats.completed}</p>
-            <p>Active todos: {todoStats.active}</p>
-            {todoStats.total > 0 && <p>Completion: {completionPercentage}%</p>}
-          </>
+          <div className={styles.stats}>
+            <p className={styles.stat}>
+              <span className={styles.statLabel}>Total todos</span>
+              <span className={styles.statValue}>{todoStats.total}</span>
+            </p>
+            <p className={styles.stat}>
+              <span className={styles.statLabel}>Completed todos</span>
+              <span className={styles.statValue}>{todoStats.completed}</span>
+            </p>
+            <p className={styles.stat}>
+              <span className={styles.statLabel}>Active todos</span>
+              <span className={styles.statValue}>{todoStats.active}</span>
+            </p>
+            {todoStats.total > 0 && (
+              <p className={`${styles.stat} ${styles.statAccent}`}>
+                <span className={styles.statLabel}>Completion</span>
+                <span className={styles.statValue}>
+                  {completionPercentage}%
+                </span>
+              </p>
+            )}
+          </div>
         )}
       </section>
     </div>
