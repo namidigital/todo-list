@@ -26,9 +26,16 @@ function TodoList({
         break;
     }
 
+    // Sink completed todos below active ones. Array.prototype.sort is stable,
+    // so items with the same completion state keep the server-provided order
+    // from the user's sort selection. Sorting a copy leaves todoList untouched.
+    const sortedTodos = [...filteredTodos].sort(
+      (a, b) => Number(a.isCompleted) - Number(b.isCompleted)
+    );
+
     return {
       version: dataVersion,
-      todos: filteredTodos,
+      todos: sortedTodos,
     };
   }, [todoList, dataVersion, statusFilter]);
 
