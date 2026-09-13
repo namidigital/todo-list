@@ -161,6 +161,34 @@
   composes: buttonPrimary from '../../../shared/controls.module.css';
 }
 
+/* Validation message + counter beneath the edit input */
+.editMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-basis: 100%;
+  padding-inline: var(--space-1);
+  font-size: var(--text-xs);
+}
+
+.validation {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.counter {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-fast);
+}
+
+.counterLimit {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
 @media (min-width: 640px) {
   .form {
     padding-inline: var(--space-3) var(--space-4);

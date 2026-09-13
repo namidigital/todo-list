@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import TextInputWithLabel from '../../../shared/TextInputWithLabel.jsx';
-import { isValidTodoTitle } from '../../../utils/todoValidation';
+import {
+  MAX_TODO_LENGTH,
+  validateTodoTitle,
+} from '../../../utils/todoValidation';
 import styles from './TodoListItem.module.css';
 
 function TodoListItem({ todo, onToggleTodo, onUpdateTodo, onDeleteTodo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(todo.title);
+
+  const validation = validateTodoTitle(workingTitle);
+  const showValidation = isEditing && !validation.isValid;
+  const remaining = MAX_TODO_LENGTH - workingTitle.length;
 
   function handleCancel() {
     setWorkingTitle(todo.title);
@@ -24,7 +31,7 @@ function TodoListItem({ todo, onToggleTodo, onUpdateTodo, onDeleteTodo }) {
 
   function handleUpdate(event) {
     event.preventDefault();
-    if (!isEditing) return;
+    if (!isEditing || !validation.isValid) return;
     onUpdateTodo({ ...todo, title: workingTitle });
     setIsEditing(false);
   }
@@ -47,6 +54,11 @@ function TodoListItem({ todo, onToggleTodo, onUpdateTodo, onDeleteTodo }) {
               labelText="Todo"
               value={workingTitle}
               onChange={handleEdit}
+              maxLength={MAX_TODO_LENGTH}
+              ariaDescribedBy={
+                showValidation ? `todoTitleError${todo.id}` : undefined
+              }
+              ariaInvalid={showValidation}
             />
             <div className={styles.editActions}>
               <button
@@ -58,11 +70,31 @@ function TodoListItem({ todo, onToggleTodo, onUpdateTodo, onDeleteTodo }) {
               </button>
               <button
                 type="submit"
-                disabled={!isValidTodoTitle(workingTitle)}
+                disabled={!validation.isValid}
                 className={styles.updateButton}
               >
                 Update
               </button>
+            </div>
+            <div className={styles.editMeta}>
+              {showValidation && (
+                <p
+                  id={`todoTitleError${todo.id}`}
+                  role="alert"
+                  className={styles.validation}
+                >
+                  {validation.reason}
+                </p>
+              )}
+              <span
+                className={
+                  remaining <= 0
+                    ? `${styles.counter} ${styles.counterLimit}`
+                    : styles.counter
+                }
+              >
+                {workingTitle.length}/{MAX_TODO_LENGTH}
+              </span>
             </div>
           </>
         ) : (

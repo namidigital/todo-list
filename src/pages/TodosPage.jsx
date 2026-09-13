@@ -8,6 +8,11 @@ import FilterInput from '../shared/FilterInput.jsx';
 import useDebounce from '../utils/useDebounce.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
+  UNAUTHORIZED,
+  logDevError,
+  toUserMessage,
+} from '../utils/errorMessages';
+import {
   todoReducer,
   initialTodoState,
   TODO_ACTIONS,
@@ -54,11 +59,11 @@ function TodosPage() {
         });
 
         if (response.status === 401) {
-          throw new Error('unauthorized');
+          throw new Error(UNAUTHORIZED);
         }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch todos.');
+          throw new Error(`Fetch todos failed (HTTP ${response.status})`);
         }
 
         const data = await response.json();
@@ -72,6 +77,8 @@ function TodosPage() {
           payload: { todos: mappedTodos },
         });
       } catch (fetchError) {
+        logDevError('fetchTodos', fetchError);
+
         const isFilterError =
           Boolean(debouncedFilterTerm) ||
           sortBy !== 'createdAt' ||
@@ -80,9 +87,12 @@ function TodosPage() {
         dispatch({
           type: TODO_ACTIONS.FETCH_ERROR,
           payload: {
-            message: isFilterError
-              ? `Error filtering/sorting todos: ${fetchError.message}`
-              : `Error fetching todos: ${fetchError.message}`,
+            message: toUserMessage(
+              fetchError,
+              isFilterError
+                ? 'We could not filter or sort your todos. Try clearing the filters.'
+                : 'We could not load your todos. Please try again.'
+            ),
             isFilterError,
           },
         });
@@ -113,11 +123,11 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to add todo.');
+        throw new Error(`Add todo failed (HTTP ${response.status})`);
       }
 
       const data = await response.json();
@@ -128,9 +138,16 @@ function TodosPage() {
         payload: { tempId, savedTodo },
       });
     } catch (addError) {
+      logDevError('addTodo', addError);
       dispatch({
         type: TODO_ACTIONS.ADD_TODO_ERROR,
-        payload: { message: addError.message, tempId },
+        payload: {
+          message: toUserMessage(
+            addError,
+            'We could not save your todo. Please try again.'
+          ),
+          tempId,
+        },
       });
     }
   }
@@ -156,18 +173,26 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to update todo status.');
+        throw new Error(`Toggle todo failed (HTTP ${response.status})`);
       }
 
       dispatch({ type: TODO_ACTIONS.COMPLETE_TODO_SUCCESS });
     } catch (toggleError) {
+      logDevError('toggleTodo', toggleError);
       dispatch({
         type: TODO_ACTIONS.COMPLETE_TODO_ERROR,
-        payload: { message: toggleError.message, id, originalTodo },
+        payload: {
+          message: toUserMessage(
+            toggleError,
+            'We could not update that todo. Please try again.'
+          ),
+          id,
+          originalTodo,
+        },
       });
     }
   }
@@ -195,19 +220,23 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to update todo.');
+        throw new Error(`Update todo failed (HTTP ${response.status})`);
       }
 
       dispatch({ type: TODO_ACTIONS.UPDATE_TODO_SUCCESS });
     } catch (updateError) {
+      logDevError('updateTodo', updateError);
       dispatch({
         type: TODO_ACTIONS.UPDATE_TODO_ERROR,
         payload: {
-          message: updateError.message,
+          message: toUserMessage(
+            updateError,
+            'We could not save your changes. Please try again.'
+          ),
           id: editedTodo.id,
           originalTodo,
         },
@@ -229,19 +258,23 @@ function TodosPage() {
       });
 
       if (response.status === 401) {
-        throw new Error('unauthorized');
+        throw new Error(UNAUTHORIZED);
       }
 
       if (!response.ok) {
-        throw new Error('Failed to delete todo.');
+        throw new Error(`Delete todo failed (HTTP ${response.status})`);
       }
 
       dispatch({ type: TODO_ACTIONS.DELETE_TODO_SUCCESS });
     } catch (deleteError) {
+      logDevError('deleteTodo', deleteError);
       dispatch({
         type: TODO_ACTIONS.DELETE_TODO_ERROR,
         payload: {
-          message: deleteError.message,
+          message: toUserMessage(
+            deleteError,
+            'We could not delete that todo. Please try again.'
+          ),
           originalTodo,
           originalIndex,
         },

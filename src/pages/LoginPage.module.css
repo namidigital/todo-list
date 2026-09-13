@@ -39,6 +39,16 @@
   margin-top: var(--space-1);
 }
 
+/* Inline field validation. Pulls up under the input (which carries the
+   field gap as bottom margin) and re-establishes that gap itself. */
+.fieldError {
+  margin-top: calc(var(--space-4) * -1 + var(--space-1));
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-danger);
+}
+
 .status {
   margin-top: var(--space-4);
   font-size: var(--text-sm);

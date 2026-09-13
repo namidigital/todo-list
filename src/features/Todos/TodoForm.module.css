@@ -32,3 +32,31 @@
     margin-bottom: 0;
   }
 }
+
+/* Validation message + character counter row beneath the input */
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-basis: 100%;
+  min-height: 1.25rem;
+  font-size: var(--text-xs);
+}
+
+.validation {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.counter {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-fast);
+}
+
+.counterLimit {
+  color: var(--color-danger);
+  font-weight: 500;
+}

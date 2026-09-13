@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import {
+  UNAUTHORIZED,
+  logDevError,
+  toUserMessage,
+} from '../utils/errorMessages';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
@@ -27,11 +32,11 @@ function ProfilePage() {
         });
 
         if (response.status === 401) {
-          throw new Error('Unauthorized');
+          throw new Error(UNAUTHORIZED);
         }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch todo statistics.');
+          throw new Error(`Fetch stats failed (HTTP ${response.status})`);
         }
 
         // The API responds with { tasks: [...], pagination: {...} }
@@ -41,7 +46,13 @@ function ProfilePage() {
 
         setTodoStats({ total, completed, active: total - completed });
       } catch (statsError) {
-        setError(statsError.message);
+        logDevError('fetchTodoStats', statsError);
+        setError(
+          toUserMessage(
+            statsError,
+            'We could not load your todo statistics. Please try again later.'
+          )
+        );
       } finally {
         setLoading(false);
       }

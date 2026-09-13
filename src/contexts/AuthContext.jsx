@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { NETWORK_ERROR_MESSAGE, logDevError } from '../utils/errorMessages';
 
 const AuthContext = createContext();
 
@@ -31,15 +32,18 @@ export function AuthProvider({ children }) {
         setToken(data.csrfToken);
         return { success: true };
       } else {
+        // The server's reason (and status) stays in the dev console only
+        logDevError('login', { status: res.status, message: data?.message });
         return {
           success: false,
-          error: `Authentication failed: ${data?.message}`,
+          error: 'We could not log you in. Check your email and password and try again.',
         };
       }
     } catch (error) {
+      logDevError('login', error);
       return {
         success: false,
-        error: 'Network error during login',
+        error: NETWORK_ERROR_MESSAGE,
       };
     }
   };
@@ -70,11 +74,19 @@ export function AuthProvider({ children }) {
         return { success: true };
       }
 
-      return { success: false, error: 'Logout request failed' };
+      logDevError('logout', { status: res.status });
+      return {
+        success: false,
+        error: 'You have been logged out on this device.',
+      };
     } catch (error) {
+      logDevError('logout', error);
       setEmail('');
       setToken('');
-      return { success: false, error: 'Network error during logout' };
+      return {
+        success: false,
+        error: 'You have been logged out on this device.',
+      };
     }
   };
 
