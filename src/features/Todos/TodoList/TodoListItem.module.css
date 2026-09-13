@@ -95,6 +95,28 @@
   color: var(--color-accent-hover);
 }
 
+/* Destructive action: quiet by default, reveals its danger styling on
+   hover/focus so it never competes with the row content. Scoped under .item
+   so the override outranks the composed buttonDanger rules regardless of
+   where they land in the bundle. */
+.deleteButton {
+  composes: buttonDanger from '../../../shared/controls.module.css';
+  flex-shrink: 0;
+  padding-inline: var(--space-3);
+}
+
+.item .deleteButton {
+  color: var(--color-text-muted);
+  border-color: transparent;
+}
+
+.item .deleteButton:not(:disabled):hover,
+.item .deleteButton:focus-visible {
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+  background-color: var(--color-danger-subtle);
+}
+
 .completed {
   color: var(--color-text-muted);
   text-decoration: line-through;

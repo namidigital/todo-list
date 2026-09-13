@@ -3,7 +3,7 @@ import TextInputWithLabel from '../../../shared/TextInputWithLabel.jsx';
 import { isValidTodoTitle } from '../../../utils/todoValidation';
 import styles from './TodoListItem.module.css';
 
-function TodoListItem({ todo, onToggleTodo, onUpdateTodo }) {
+function TodoListItem({ todo, onToggleTodo, onUpdateTodo, onDeleteTodo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [workingTitle, setWorkingTitle] = useState(todo.title);
 
@@ -14,6 +14,12 @@ function TodoListItem({ todo, onToggleTodo, onUpdateTodo }) {
 
   function handleEdit(event) {
     setWorkingTitle(event.target.value);
+  }
+
+  function handleDelete() {
+    if (window.confirm('Are you sure you want to delete this todo?')) {
+      onDeleteTodo(todo.id);
+    }
   }
 
   function handleUpdate(event) {
@@ -76,6 +82,14 @@ function TodoListItem({ todo, onToggleTodo, onUpdateTodo }) {
             >
               {todo.title}
             </span>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className={styles.deleteButton}
+              aria-label={`Delete "${todo.title}"`}
+            >
+              Delete
+            </button>
           </>
         )}
       </form>

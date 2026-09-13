@@ -6,6 +6,7 @@ function TodoList({
   todoList,
   onToggleTodo,
   onUpdateTodo,
+  onDeleteTodo,
   dataVersion,
   statusFilter = 'active',
 }) {
@@ -53,6 +54,7 @@ function TodoList({
           todo={todo}
           onToggleTodo={onToggleTodo}
           onUpdateTodo={onUpdateTodo}
+          onDeleteTodo={onDeleteTodo}
         />
       ))}
     </ul>
